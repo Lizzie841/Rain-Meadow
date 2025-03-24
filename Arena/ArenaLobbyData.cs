@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -30,11 +31,11 @@ namespace RainMeadow
             [OnlineField]
             public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
             [OnlineField]
-            public Dictionary<ushort, int> playersChoosingSlugs;
+            public Dictionary<string, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
-            [OnlineField]
-            public List<ushort> playersReadiedUp;
+            [OnlineField(nullable =true)]
+            public Generics.DynamicOrderedPlayerIDs playersReadiedUp;
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
@@ -72,8 +73,8 @@ namespace RainMeadow
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
-                playersReadiedUp = arena.playersReadiedUp;
-                playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
+                playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
+                playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
                 playerEnteredGame = arena.playerEnteredGame;

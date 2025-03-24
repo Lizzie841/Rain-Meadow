@@ -160,7 +160,10 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.playersInLobbyChoosingSlugs[userChangingClass.inLobbyId] = currentColorIndex;
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playersInLobbyChoosingSlugs[userChangingClass.id.ToString()] = currentColorIndex;
+                }
 
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
                 if (game.manager.upcomingProcess != null)
@@ -199,9 +202,9 @@ namespace RainMeadow
                 {
                     return;
                 }
-                if (!arena.playersReadiedUp.Contains(userIsReady.inLobbyId))
+                if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
                 {
-                    arena.playersReadiedUp.Add(userIsReady.inLobbyId);
+                    arena.playersReadiedUp.list.Add(userIsReady.id);
                 }
 
                 try
