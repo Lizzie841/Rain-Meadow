@@ -65,9 +65,35 @@ public partial class RainMeadow
         On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
         On.Player.CanEatMeat += Player_CanEatMeat;
         
+        On.Player.SetMalnourished += Player_SetMalnourished;
+        new Hook(typeof(Player).GetProperty(nameof(Player.Malnourished)).GetGetMethod(), Player_get_Malnourished);
+        
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+    }
+
+    delegate bool orig_get_Malnourished(Player self);
+
+    bool Player_get_Malnourished(orig_get_Malnourished orig, Player self) {
+        if (OnlineManager.lobby != null && !self.isNPC) {
+            if (slugcatStatsPerPlayer.TryGetValue(self, out var stats)) {
+                return stats.malnourished;
+            }
+        }
+
+        return orig(self);
+
+    }
+
+
+
+    void Player_SetMalnourished(On.Player.orig_SetMalnourished orig, Player self, bool m) {
+        orig(self, m);
+        if (OnlineManager.lobby != null && !self.isNPC) {
+            slugcatStatsPerPlayer.Remove(self);
+            slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, m));
+        }
     }
 
     private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)
@@ -694,7 +720,14 @@ public partial class RainMeadow
             orig(self);
             return;
         }
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
+        {
+            RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
+            orig(self);
+            return;
+        }
+
         if (!onlineEntity.isMine) return;
 
         var state = (PlayerState)self.State;
@@ -718,7 +751,13 @@ public partial class RainMeadow
             return;
         }
 
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) 
+        {
+            RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
+            orig(self, add);
+            return;
+        }
+
         if (!onlineEntity.isMine) return;
 
         var state = (PlayerState)self.State;
@@ -742,7 +781,13 @@ public partial class RainMeadow
             return;
         }
 
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) 
+        {
+            RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
+            orig(self, add);
+            return;
+        }
+
         if (!onlineEntity.isMine) return;
 
         var state = (PlayerState)self.State;
@@ -827,7 +872,7 @@ public partial class RainMeadow
             }
             if (oe is not null)
             {
-                slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, self.slugcatStats.malnourished));
+                slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, self.abstractCreature.world.game.GetStorySession.saveState.malnourished));
                 RainMeadow.Debug($"slugcatstats:{self.SlugCatClass} owner:{oe.owner}");
             }
         }
