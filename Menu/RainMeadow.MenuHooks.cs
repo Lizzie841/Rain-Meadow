@@ -61,11 +61,15 @@ namespace RainMeadow
             {
                 // possibly might wanna make a remix option for disabling text navigation in story menu and enabling menu navigation?
                 if (!ChatTextBox.blockInput || self.input.controllerType != Options.ControlSetup.Preset.KeyboardSinglePlayer) orig(self, direction);
-            } else
-            {
+            } else {
                 orig(self, direction);
             }
         }
+
+        void IL_SlugcatSelectMenu_JollyMenu() {
+
+        }
+
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
             orig(self, timestacker);
@@ -78,11 +82,12 @@ namespace RainMeadow
         {
             if (self is StoryOnlineMenu sOM)
             {
+                if (ModManager.JollyCoop) return; // jolly has it's own coloring system. 
                 if (sOM.colorInterface == null)
                 {
                     sOM.SetupSelectableSlugcats();
                     Vector2 pos = new(1000f - (1366f - sOM.manager.rainWorld.options.ScreenSize.x) / 2f, sOM.manager.rainWorld.options.ScreenSize.y - 100f);
-                    self.colorInterface = self.GetColorInterfaceForSlugcat(sOM.CurrentSlugcat, pos);
+                    self.colorInterface = self.GetColorInterfaceForSlugcat(sOM.PlayerSelectedSlugcat, pos);
                     self.pages[0].subObjects.Add(self.colorInterface);
                     //return; removed return due to the orig making a new the color interface if it is null, so unnecessary
                 }

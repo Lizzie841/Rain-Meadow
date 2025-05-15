@@ -412,7 +412,11 @@ namespace RainMeadow
             {
                 IntVector2 intVector = SlugcatStats.SlugcatFoodMeter(storyGameMode.currentCampaign);
                 self.slugcatStats.maxFood = intVector.x;
-                self.slugcatStats.foodToHibernate = intVector.y;
+                if (self.abstractCreature.world.game.GetStorySession.saveState.malnourished) {
+                    self.slugcatStats.foodToHibernate = intVector.x;
+                } else {
+                    self.slugcatStats.foodToHibernate = intVector.y; 
+                }
             }
         }
 
@@ -447,13 +451,13 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
                 {
-                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                    return self is StoryOnlineMenu sOM ? sOM.PlayerSelectedSlugcat.value : value;
                 });
                 c.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
                 {
-                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                    return self is StoryOnlineMenu sOM ? sOM.PlayerSelectedSlugcat.value : value;
                 });
                 /*c.GotoNext(MoveType.AfterLabel,
                     i => i.MatchLdsfld<ModManager>("MMF"),
@@ -485,6 +489,14 @@ namespace RainMeadow
                 {
                     return storyGameMode.requireCampaignSlugcat;
                 }
+
+                if (ModManager.JollyCoop) 
+                {
+                    if (box.IDString == "COLORS") {
+                        return self.manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.CUSTOM;
+                    }
+
+                }
             }
             return orig(self, box);
         }
@@ -499,6 +511,7 @@ namespace RainMeadow
                 }
                 if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
+                    if (ModManager.JollyCoop) self.manager.rainWorld.options.friendlyFire = c;
                     storyGameMode.friendlyFire = c;
                     return;
                 }
@@ -506,6 +519,15 @@ namespace RainMeadow
                 {
                     storyGameMode.requireCampaignSlugcat = c;
                     return;
+                }
+
+                if (ModManager.JollyCoop) 
+                {
+                    if (box.IDString == "COLORS") {
+                        self.manager.rainWorld.options.jollyColorMode = c? Options.JollyColorMode.CUSTOM : Options.JollyColorMode.DEFAULT;
+                        return;
+                    }
+
                 }
             }
             orig(self, box, c);
@@ -526,13 +548,13 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
                 {
-                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                    return self is StoryOnlineMenu sOM ? sOM.PlayerSelectedSlugcat.value : value;
                 });
                 cursor.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
                 {
-                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                    return self is StoryOnlineMenu sOM ? sOM.PlayerSelectedSlugcat.value : value;
                 });
 
             }
@@ -584,7 +606,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloca, 0);
                 c.EmitDelegate((Menu.SlugcatSelectMenu menu, ref SlugcatStats.Name name) =>
                 {
-                    name = menu is StoryOnlineMenu storyOnlineMenu ? storyOnlineMenu.CurrentSlugcat : name;
+                    name = menu is StoryOnlineMenu storyOnlineMenu ? storyOnlineMenu.PlayerSelectedSlugcat : name;
 
                 });
 
