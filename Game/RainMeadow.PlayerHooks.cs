@@ -184,6 +184,7 @@ public partial class RainMeadow
             }
         }
 
+
         if (self.consumedRippleFood > 0)
         {
             self.consumedRippleFood--;
@@ -292,7 +293,7 @@ public partial class RainMeadow
             }
         }
     }
-    
+
     delegate bool orig_get_Malnourished(Player self);
 
     bool Player_get_Malnourished(orig_get_Malnourished orig, Player self) {
